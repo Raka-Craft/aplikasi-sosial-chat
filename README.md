@@ -30,7 +30,7 @@ zipalign
 apksigner sign
 ```
 
-Versi terbaru: v2.1 (versionCode 4) - perbaikan input IP/Port dipisah.
+Versi terbaru: v2.2 (versionCode 5) - WhatsApp theme overhaul (Dark/Light, split IP/Port, toast, emoji, bubbles WA).
 
 ## Catatan
 - Host harus tetap membuka aplikasi. Jika Host tutup, ruangan hilang.

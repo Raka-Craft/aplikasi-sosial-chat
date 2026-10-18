@@ -3,90 +3,276 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <title>Aplikasi Sosial Chat — LAN</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#E9EFEA;color:#132019}
-header{background:#059669;color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5}
-.logo{width:40px;height:40px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:22px}
-h1{font-size:18px;margin:0}small{opacity:.85}
-.card{background:#fff;margin:16px;border-radius:16px;padding:18px;box-shadow:0 4px 18px rgba(0,0,0,.08)}
-label{font-size:13px;font-weight:600;color:#475569;display:block;margin:10px 0 6px}
-input{width:100%;padding:12px 14px;border:1px solid #CBD5E1;border-radius:12px;font-size:15px;outline:none}
-input:focus{border-color:#059669;box-shadow:0 0 0 3px rgba(5,150,105,.15)}
-button{width:100%;padding:13px;border:0;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;margin-top:10px}
-.btn-host{background:#059669;color:#fff}.btn-join{background:#F59E0B;color:#1F2937}.btn-ghost{background:#EEF2F1;color:#132019}
-.hint{font-size:13px;color:#64748B;line-height:1.5;margin-top:10px}
-.ipbox{background:#064E3B;color:#fff;border-radius:12px;padding:12px 14px;margin-top:12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
-.ipbox b{font-size:16px}.ipbox button{width:auto;margin:0;padding:8px 12px;background:#F59E0B;color:#111;border-radius:10px}
-#chat{display:none;flex-direction:column;height:100dvh}
-#topbar{background:#059669;color:#fff;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px}
-#topbar button{width:auto;margin:0;padding:8px 12px;background:rgba(255,255,255,.2);color:#fff}
-.pill{font-size:12px;padding:5px 10px;border-radius:999px;background:#fff;color:#059669;font-weight:700}
-.pill.off{background:#FEE2E2;color:#B91C1C}.pill.wait{background:#FEF3C7;color:#92400E}
-#msgs{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:#E9EFEA}
-.msg{max-width:82%;padding:10px 12px;border-radius:14px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);word-break:break-word}
-.msg.me{align-self:flex-end;background:#059669;color:#fff}
-.msg .who{font-size:12px;font-weight:700;opacity:.75}.msg .time{font-size:11px;opacity:.6;margin-top:4px;text-align:right}
-.msg img{max-width:100%;border-radius:10px;margin-top:6px;display:block}
-#composer{background:#fff;padding:10px;display:flex;gap:8px;align-items:center;border-top:1px solid #E2E8F0}
-#composer input{flex:1;margin:0}
-.iconbtn{width:44px;height:44px;flex:0 0 44px;border-radius:50%;border:0;background:#EEF2F1;font-size:20px;cursor:pointer}
-.send{width:48px;height:44px;flex:0 0 48px;border:0;border-radius:12px;background:#059669;color:#fff;font-weight:800;cursor:pointer}
-#preview{display:none;padding:8px 10px;background:#FFFBEB;border-top:1px solid #FDE68A;align-items:center;gap:8px}
-#preview img{width:56px;height:56px;object-fit:cover;border-radius:8px}
+*{box-sizing:border-box}
+:root{color-scheme:dark}
+[data-theme="dark"]{
+  --app-bg:#0b141a; --sidebar:#111b21; --header:#202c33; --chat-bg:#0b141a;
+  --accent:#00a884; --accent-hover:#06cf9c; --outgoing:#005c4b; --incoming:#202c33;
+  --text-primary:#e9edef; --text-secondary:#8696a0; --border:#222d34;
+  --input-bg:#2a3942; --input-text:#e9edef; --banner-bg:#182229; --composer-bg:#202c33;
+  --bubble-shadow:0 1px 1px rgba(0,0,0,.3); --card-bg:#111b21; --btn-ghost:#202c33;
+}
+[data-theme="light"]{
+  --app-bg:#efeae2; --sidebar:#ffffff; --header:#f0f2f5; --chat-bg:#efeae2;
+  --accent:#008069; --accent-hover:#00967f; --outgoing:#d9fdd3; --incoming:#ffffff;
+  --text-primary:#111b21; --text-secondary:#667781; --border:#e9edef;
+  --input-bg:#ffffff; --input-text:#111b21; --banner-bg:#fdf3c6; --composer-bg:#f0f2f5;
+  --bubble-shadow:0 1px 1px rgba(0,0,0,.12); --card-bg:#ffffff; --btn-ghost:#f0f2f5;
+}
+html,body{margin:0;padding:0;height:100%}
+body{font-family:'Segoe UI','Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--app-bg);color:var(--text-primary);height:100dvh;overflow:hidden}
+button{font-family:inherit;cursor:pointer;border:0}
+input{font-family:inherit}
+.app{display:flex;height:100dvh;width:100%}
+/* ===== SIDEBAR / LOBBY ===== */
+#setup{width:400px;flex-shrink:0;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;height:100dvh}
+header{background:var(--header);padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:5}
+.avatar{width:42px;height:42px;min-width:42px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px}
+.avatar.small{width:38px;height:38px;min-width:38px;font-size:15px}
+.avatar.room{background:#7f8c8d}
+.profile{flex:1;min-width:0}
+.profile label{font-size:11px;color:var(--text-secondary);display:block;margin-bottom:2px}
+.profile input{width:100%;background:transparent;border:0;border-bottom:1px solid var(--border);color:var(--text-primary);font-size:16px;font-weight:600;padding:4px 0;outline:none}
+.profile input:focus{border-color:var(--accent)}
+.icon-btn{width:38px;height:38px;border-radius:50%;background:transparent;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;font-size:18px}
+.icon-btn:hover{background:rgba(0,0,0,.08);color:var(--text-primary)}
+.status-row{padding:10px 16px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-secondary);line-height:1.5}
+.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-right:6px}
+.status-dot.on{background:#00a884;box-shadow:0 0 0 4px rgba(0,168,132,.18);animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(0,168,132,.35)}70%{box-shadow:0 0 0 6px rgba(0,168,132,0)}100%{box-shadow:0 0 0 0 rgba(0,168,132,0)}}
+.tabs{display:flex;margin:14px 16px 0;background:var(--header);border-radius:999px;padding:4px;gap:4px}
+.tab{flex:1;padding:10px 8px;border-radius:999px;background:transparent;color:var(--text-secondary);font-weight:600;font-size:14px}
+.tab.active{background:var(--accent);color:#fff}
+.panel{padding:14px 16px}
+.panel h3{margin:4px 0 6px;font-size:15px}
+.panel p{margin:0 0 12px;font-size:13px;color:var(--text-secondary);line-height:1.5}
+label{font-size:12px;font-weight:600;color:var(--text-secondary);display:block;margin:12px 0 6px}
+.field{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font-size:15px;outline:none;background:var(--input-bg);color:var(--input-text)}
+.field:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,168,132,.15)}
+.btn-primary{width:100%;padding:13px;border-radius:10px;font-size:15px;font-weight:700;color:#fff;background:var(--accent);margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-primary:disabled{opacity:.6;cursor:wait}
+.btn-ghost{width:100%;padding:11px;border-radius:10px;background:var(--btn-ghost);color:var(--text-primary);font-weight:600;margin-top:10px}
+.code-box{background:var(--banner-bg);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-top:12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.code-box small{color:var(--text-secondary);display:block}
+.code-box b{font-size:16px;word-break:break-all}
+.copy-btn{padding:8px 12px;border-radius:8px;background:var(--accent);color:#fff;font-weight:700;font-size:13px;white-space:nowrap}
+.hint{font-size:12px;color:var(--text-secondary);line-height:1.6;margin-top:10px}
+.join-preview{background:rgba(0,168,132,.12);border:1px solid rgba(0,168,132,.25);border-radius:10px;padding:9px 11px;font-size:13px;color:var(--text-primary);margin-top:8px}
+.join-error{display:none;color:#ff8a8a;background:rgba(255,0,0,.08);border:1px solid rgba(255,0,0,.2);border-radius:10px;padding:9px 11px;font-size:13px;margin-top:8px}
+.howto{margin:0 16px 16px;background:var(--header);border-radius:12px;padding:12px 14px;font-size:13px;color:var(--text-secondary);line-height:1.6}
+.howto b{color:var(--text-primary)}
 .hidden{display:none!important}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;display:inline-block;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* ===== MAIN / WELCOME / CHAT ===== */
+#welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;background:var(--chat-bg);position:relative;overflow:hidden}
+#welcome::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.06) 1px,transparent 1px);background-size:22px 22px;opacity:.06;pointer-events:none}
+[data-theme="light"] #welcome::before{background-image:radial-gradient(rgba(0,0,0,.06) 1px,transparent 1px)}
+.welcome-card{position:relative;max-width:520px}
+.welcome-ill{width:96px;height:96px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:44px;margin:0 auto 16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.welcome-card h2{margin:0 0 8px;font-size:26px;font-weight:300}
+.welcome-card p{color:var(--text-secondary);line-height:1.6;font-size:14px}
+.welcome-actions{margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.welcome-actions button{padding:11px 16px;border-radius:999px;font-weight:700}
+.welcome-actions .primary{background:var(--accent);color:#fff}
+.welcome-actions .secondary{background:var(--header);color:var(--text-primary)}
+#chat{display:none;flex-direction:column;height:100dvh;flex:1;min-width:0;background:var(--chat-bg);position:relative}
+#chat::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.07) 1px,transparent 1px);background-size:22px 22px;opacity:.06;pointer-events:none;z-index:0}
+[data-theme="light"] #chat::before{background-image:radial-gradient(rgba(0,0,0,.07) 1px,transparent 1px)}
+#topbar{position:relative;z-index:2;background:var(--header);padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+#topbar .back{display:none}
+.room-info{flex:1;min-width:0}
+#roomTitle{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#roomSub{font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill{font-size:12px;padding:6px 10px;border-radius:999px;background:var(--input-bg);color:var(--text-primary);font-weight:700;white-space:nowrap}
+.pill.off{background:#fee2e2;color:#b91c1c}
+.pill.wait{background:#fef3c7;color:#92400e}
+#hostIpBox{position:relative;z-index:2;margin:10px 12px 0;background:var(--banner-bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+#hostIpBox small{color:var(--text-secondary)}
+#hostIpBox b{font-size:15px}
+.sys-banner{position:relative;z-index:1;margin:10px 16px 0;background:var(--banner-bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--text-primary);text-align:center}
+#msgs{position:relative;z-index:1;flex:1;overflow:auto;padding:16px 7% 16px;display:flex;flex-direction:column;gap:8px}
+.msg{max-width:68%;padding:8px 10px 7px;border-radius:8px;background:var(--incoming);color:var(--text-primary);box-shadow:var(--bubble-shadow);word-break:break-word;position:relative;animation:msgIn .22s ease both}
+.msg.me{align-self:flex-end;background:var(--outgoing);color:#e9edef}
+[data-theme="light"] .msg.me{color:#111b21}
+.msg.me::after{content:"";position:absolute;top:0;right:-7px;width:0;height:0;border:8px solid transparent;border-top-color:var(--outgoing);border-right-color:var(--outgoing)}
+.msg:not(.me)::before{content:"";position:absolute;top:0;left:-7px;width:0;height:0;border:8px solid transparent;border-top-color:var(--incoming);border-left-color:var(--incoming)}
+.msg .who{font-size:12px;font-weight:700;margin-bottom:2px}
+.msg .body{font-size:14.2px;line-height:1.45;white-space:pre-wrap}
+.msg img{max-width:100%;border-radius:8px;margin-top:6px;display:block}
+.msg .meta{display:flex;justify-content:flex-end;align-items:center;gap:4px;margin-top:4px;font-size:11px;color:var(--text-secondary)}
+.msg.me .meta{color:rgba(233,237,239,.85)}
+[data-theme="light"] .msg.me .meta{color:#667781}
+.checks{color:#53bdeb;font-weight:700;letter-spacing:-1px}
+.event-pill{align-self:center;background:var(--header);color:var(--text-secondary);font-size:12px;padding:6px 12px;border-radius:999px;margin:6px 0}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+#preview{display:none;position:relative;z-index:2;padding:8px 12px;background:#fff3c4;border-top:1px solid #fde68a;align-items:center;gap:8px;color:#111b21}
+#preview img{width:56px;height:56px;object-fit:cover;border-radius:8px}
+#composer{position:relative;z-index:2;background:var(--composer-bg);padding:10px 12px;display:flex;gap:8px;align-items:flex-end;border-top:1px solid var(--border)}
+.iconbtn{width:42px;height:42px;flex:0 0 42px;border-radius:50%;border:0;background:transparent;color:var(--text-secondary);font-size:20px;display:flex;align-items:center;justify-content:center}
+.iconbtn:hover{background:rgba(0,0,0,.06)}
+#text{flex:1;padding:11px 14px;border:0;border-radius:999px;font-size:15px;outline:none;background:var(--input-bg);color:var(--input-text);resize:none;max-height:110px;line-height:1.4}
+.send{width:46px;height:46px;flex:0 0 46px;border:0;border-radius:50%;background:var(--accent);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;transition:transform .12s}
+.send:active{transform:scale(.92)}
+/* Toast */
+#toastWrap{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{background:#222d34;color:#e9edef;padding:11px 16px;border-radius:999px;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.35);animation:msgIn .22s ease both;max-width:92vw;text-align:center}
+[data-theme="light"] .toast{background:#111b21;color:#fff}
+/* Emoji */
+#emojiPop{display:none;position:absolute;bottom:70px;left:12px;z-index:10;background:var(--sidebar);border:1px solid var(--border);border-radius:14px;padding:10px;box-shadow:0 12px 30px rgba(0,0,0,.3);grid-template-columns:repeat(8,1fr);gap:4px}
+#emojiPop.show{display:grid}
+#emojiPop button{background:transparent;font-size:22px;padding:6px;border-radius:8px}
+#emojiPop button:hover{background:var(--header)}
+@media (max-width:767px){
+  #setup{width:100%;border-right:0}
+  #welcome{display:none}
+  #chat{width:100%}
+  #topbar .back{display:flex}
+  #msgs{padding:12px 12px 16px}
+  .msg{max-width:86%}
+  #toastWrap{bottom:76px}
+  .app.mobile-chat #setup{display:none}
+  .app.mobile-chat #chat{display:flex}
+}
 </style></head>
-<body>
-<header><div class="logo">💬</div><div><h1>Aplikasi Sosial Chat</h1><small>Chat LAN • Satu WiFi • Tanpa Internet</small></div></header>
-
-<div id="setup" class="card">
-  <h2 style="margin:0 0 4px">Masuk Ruangan LAN</h2>
-  <p style="margin:0;color:#64748B;font-size:14px">Semua HP harus di WiFi yang sama. Tanpa login, tanpa server luar.</p>
-  <label>Nama kamu</label>
-  <input id="name" placeholder="Contoh: Andi" maxlength="30"/>
-  <button class="btn-host" onclick="createRoom()">＋ Buat Ruangan (Jadi Host)</button>
-  <button class="btn-join" onclick="showJoin()">→ Gabung Ruangan</button>
-  <div id="joinBox" class="hidden">
-    <label>IP Host (dari HP Host) — tanpa port, tanpa titik dua</label>
-    <input id="hostIp" placeholder="Contoh: 192.168.1.8" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false"/>
-    <label>Port</label>
-    <input id="hostPort" placeholder="8080" type="text" inputmode="numeric" autocomplete="off" value="8080" maxlength="5"/>
-    <div id="joinPreview" class="hint" style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:8px 10px;color:#166534">Akan gabung ke: -</div>
-    <div id="joinError" class="hint" style="display:none;color:#B91C1C;background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:8px 10px"></div>
-    <button class="btn-join" onclick="joinRoom()">Gabung Sekarang</button>
-    <div class="hint">Minta IP ke Host. Host bisa lihat IP-nya di layar chat setelah Buat Ruangan. Tidak perlu ketik titik dua (:) — IP dan Port sudah dipisah.</div>
+<body data-theme="dark">
+<div class="app" id="appRoot">
+  <!-- SIDEBAR / LOBBY -->
+  <div id="setup">
+    <header>
+      <div class="avatar" id="avatar">A</div>
+      <div class="profile">
+        <label>Username / Nama Tampilan</label>
+        <input id="name" placeholder="Contoh: Andi" maxlength="30" autocomplete="off"/>
+      </div>
+      <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="Ganti tema">🌙</button>
+    </header>
+    <div class="status-row"><span class="status-dot" id="connDot"></span><span id="connText">Belum terhubung — Buat room atau gabung ke Host.</span><div id="myIpHint" style="margin-top:4px">Mendeteksi IP WiFi...</div></div>
+    <div class="tabs">
+      <button class="tab active" id="tabHostBtn" onclick="switchTab('host')">📡 Jadi Host</button>
+      <button class="tab" id="tabJoinBtn" onclick="switchTab('join')">🔗 Gabung Chat</button>
+    </div>
+    <!-- HOST PANEL -->
+    <div class="panel" id="hostPanel">
+      <h3>Buat Room sebagai Host</h3>
+      <p>HP ini menjadi server. Bagikan IP ruangan ke teman agar mereka bisa bergabung dalam satu WiFi.</p>
+      <button class="btn-primary" id="createBtn" onclick="createRoom()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Z" fill="currentColor" opacity=".2"/><path d="M12 5v7l5 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        Buat Ruangan (Jadi Host)
+      </button>
+      <div class="code-box" id="sidebarHostBox" style="display:none">
+        <div><small>IP Ruangan (bagikan ke teman)</small><br><b id="sidebarHostIpText">-</b></div>
+        <button class="copy-btn" onclick="copyIp()">Salin</button>
+      </div>
+      <div class="hint" id="hostStatusHint">Status: <b>Belum membuat room</b>. Setelah room dibuat, status akan berubah menjadi Menunggu teman bergabung.</div>
+    </div>
+    <!-- JOIN PANEL / joinBox preserved -->
+    <div class="panel hidden" id="joinBox">
+      <h3>Gabung ke Room Teman</h3>
+      <p>Tempel IP Host dari HP Host. IP dan Port sudah dipisah, tidak perlu ketik titik dua (:).</p>
+      <label>IP Host (dari HP Host)</label>
+      <input id="hostIp" class="field" placeholder="Contoh: 192.168.1.8" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false"/>
+      <label>Port</label>
+      <input id="hostPort" class="field" placeholder="8080" type="text" inputmode="numeric" autocomplete="off" value="8080" maxlength="5"/>
+      <div id="joinPreview" class="join-preview">Akan gabung ke: -</div>
+      <div id="joinError" class="join-error"></div>
+      <button class="btn-primary" id="joinBtn" onclick="joinRoom()">Gabung Sekarang</button>
+      <div class="hint">Minta IP ke Host. Host bisa lihat IP-nya di layar chat setelah Buat Ruangan.</div>
+    </div>
+    <div class="howto"><b>Cara pakai:</b><br>1. HP 1 tap <b>Buat Ruangan</b>, lalu bagikan IP-nya.<br>2. HP lain isi Nama + IP Host, tap <b>Gabung</b>.<br>3. Chat teks + foto langsung jalan. Host harus tetap buka aplikasi, riwayat hilang kalau Host tutup.</div>
   </div>
-  <div class="hint"><b>Cara pakai:</b><br>1. HP 1 tap <b>Buat Ruangan</b>, lalu bagikan IP-nya.<br>2. HP lain isi Nama + IP Host, tap <b>Gabung</b>.<br>3. Chat teks + foto langsung jalan. Host harus tetap buka aplikasi, riwayat hilang kalau Host tutup.</div>
-  <div class="hint" id="myIpHint">Mendeteksi IP WiFi...</div>
+  <!-- WELCOME -->
+  <div id="welcome">
+    <div class="welcome-card">
+      <div class="welcome-ill">💬</div>
+      <h2>Aplikasi Sosial Chat</h2>
+      <p>Buat room sebagai Host atau masukkan kode untuk bergabung.<br>Chat LAN • Satu WiFi • Tanpa Internet • Tanpa login.</p>
+      <div class="welcome-actions">
+        <button class="primary" onclick="switchTab('host');focusName()">📡 Jadi Host</button>
+        <button class="secondary" onclick="switchTab('join');focusName()">🔗 Gabung Chat</button>
+      </div>
+      <p style="margin-top:14px;font-size:12px">Kode Host di sini adalah IP + Port Host, contoh: 192.168.1.8:8080</p>
+    </div>
+  </div>
+  <!-- CHAT -->
+  <div id="chat">
+    <div id="topbar">
+      <button class="icon-btn back" onclick="leave()" title="Kembali">←</button>
+      <div class="avatar small room" id="roomAvatar">R</div>
+      <div class="room-info"><div id="roomTitle">Ruangan LAN</div><div id="roomSub"></div></div>
+      <span id="status" class="pill wait">Mencari...</span>
+      <button class="icon-btn" onclick="copyIp()" title="Salin Kode Room">📋</button>
+      <button class="icon-btn" onclick="toggleTheme()" title="Ganti tema">🌙</button>
+      <button class="icon-btn" onclick="leave()" title="Keluar / Putuskan" style="color:#ff6b6b">🚪</button>
+    </div>
+    <div id="hostIpBox"><div><small>IP Ruangan (bagikan ke teman)</small><br><b id="hostIpText">-</b></div><button class="copy-btn" onclick="copyIp()">Salin</button></div>
+    <div class="sys-banner">🔒 Sesi chat terhubung. Bagikan kode Host kepada temanmu untuk mengobrol secara real-time.</div>
+    <div id="msgs"></div>
+    <div id="preview"><img id="prevImg"/><span id="prevTxt" style="font-size:13px">Foto siap dikirim</span><button onclick="clearPhoto()" style="width:auto;margin-left:auto;padding:6px 10px;border-radius:8px">✕</button></div>
+    <div id="composer">
+      <button class="iconbtn" onclick="toggleEmoji(event)" title="Emoji">😊</button>
+      <button class="iconbtn" onclick="document.getElementById('fileInput').click()" title="Kirim foto">📷</button>
+      <input id="fileInput" type="file" accept="image/*" style="display:none" onchange="onFile(this)"/>
+      <input id="text" placeholder="Ketik pesan" maxlength="4000" onkeydown="if(event.key==='Enter')send()"/>
+      <button class="send" onclick="send()" title="Kirim"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M22 2L15 22L11 13L2 9L22 2Z" fill="white"/></svg></button>
+      <div id="emojiPop"></div>
+    </div>
+  </div>
 </div>
-
-<div id="chat">
-  <div id="topbar">
-    <div><b id="roomTitle">Ruangan LAN</b><br><span id="roomSub" style="font-size:12px;opacity:.85"></span></div>
-    <span id="status" class="pill wait">Mencari...</span>
-    <button onclick="leave()">Keluar</button>
-  </div>
-  <div id="hostIpBox" class="ipbox" style="margin:10px 12px 0"><div><small>IP Ruangan (bagikan ke teman)</small><br><b id="hostIpText">-</b></div><button onclick="copyIp()">Salin</button></div>
-  <div id="msgs"></div>
-  <div id="preview"><img id="prevImg"/><span id="prevTxt" style="font-size:13px">Foto siap dikirim</span><button onclick="clearPhoto()" style="width:auto;margin-left:auto;padding:6px 10px">✕</button></div>
-  <div id="composer">
-    <button class="iconbtn" onclick="document.getElementById('fileInput').click()" title="Kirim foto">📷</button>
-    <input id="fileInput" type="file" accept="image/*" style="display:none" onchange="onFile(this)"/>
-    <input id="text" placeholder="Ketik pesan..." maxlength="4000" onkeydown="if(event.key==='Enter')send()"/>
-    <button class="send" onclick="send()">➤</button>
-  </div>
-</div>
-
+<div id="toastWrap"></div>
 <script>
 let myName='', base='', isHost=false, hostIp='', lastTime=0, timer=null, pendingImage='', seen=new Set();
+let currentTheme='dark';
+const EMOJIS=['😂','🔥','👍','❤️','😭','🙏','🎉','😍','😮','😢','👏','🤣','😅','🙌','💪','✨'];
+function showToast(msg){
+  const wrap=document.getElementById('toastWrap');
+  const el=document.createElement('div'); el.className='toast'; el.textContent=msg;
+  wrap.appendChild(el); setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(()=>el.remove(),300); },2600);
+}
+function toggleTheme(){
+  currentTheme = (document.body.getAttribute('data-theme')==='dark') ? 'light' : 'dark';
+  document.body.setAttribute('data-theme', currentTheme);
+  try{ localStorage.setItem('wa-theme', currentTheme); }catch(e){}
+  document.querySelectorAll('#themeBtn').forEach(b=>b.textContent = currentTheme==='dark' ? '🌙' : '☀️');
+}
+(function initTheme(){ try{ const t=localStorage.getItem('wa-theme'); if(t==='light'||t==='dark'){ currentTheme=t; document.body.setAttribute('data-theme', t); } }catch(e){} })();
+function switchTab(mode){
+  const hb=document.getElementById('tabHostBtn'), jb=document.getElementById('tabJoinBtn');
+  const hp=document.getElementById('hostPanel'), jp=document.getElementById('joinBox');
+  if(mode==='join'){ hb.classList.remove('active'); jb.classList.add('active'); hp.classList.add('hidden'); jp.classList.remove('hidden'); updateJoinPreview(); }
+  else { jb.classList.remove('active'); hb.classList.add('active'); jp.classList.add('hidden'); hp.classList.remove('hidden'); }
+}
+function focusName(){ const n=document.getElementById('name'); if(n) n.focus(); }
+function updateAvatar(){
+  const n=(document.getElementById('name').value||'').trim();
+  const av=document.getElementById('avatar');
+  if(av) av.textContent = n ? n.charAt(0).toUpperCase() : 'A';
+  const ra=document.getElementById('roomAvatar');
+  if(ra && n) ra.textContent = n.charAt(0).toUpperCase();
+}
+document.addEventListener('DOMContentLoaded', function(){
+  const nameEl=document.getElementById('name');
+  if(nameEl) nameEl.addEventListener('input', updateAvatar);
+  const ipEl=document.getElementById('hostIp'); const portEl=document.getElementById('hostPort');
+  if(ipEl){ ipEl.addEventListener('input', tryAutoSplitIpField); ipEl.addEventListener('paste', function(){ setTimeout(tryAutoSplitIpField, 0); }); }
+  if(portEl){ portEl.addEventListener('input', updateJoinPreview); }
+  const em=document.getElementById('emojiPop');
+  if(em){ em.innerHTML=''; EMOJIS.forEach(e=>{ const b=document.createElement('button'); b.type='button'; b.textContent=e; b.onclick=()=>{ const t=document.getElementById('text'); t.value+=e; t.focus(); hideEmoji(); }; em.appendChild(b); }); }
+  document.addEventListener('click', function(ev){ const pop=document.getElementById('emojiPop'); if(pop && pop.classList.contains('show') && !pop.contains(ev.target) && !ev.target.closest('[onclick*="toggleEmoji"]')) hideEmoji(); });
+});
+function toggleEmoji(ev){ if(ev) ev.stopPropagation(); const p=document.getElementById('emojiPop'); p.classList.toggle('show'); }
+function hideEmoji(){ const p=document.getElementById('emojiPop'); if(p) p.classList.remove('show'); }
 async function detectIp(){
-  try{ const r=await fetch('/info'); const j=await r.json(); document.getElementById('myIpHint').textContent='IP WiFi HP ini: '+(j.ip||'-')+' : '+j.port+'  •  Kalau kamu jadi Host, bagikan IP ini.'; }
-  catch(e){ document.getElementById('myIpHint').textContent='Tidak bisa deteksi IP. Pastikan WiFi aktif.'; }
+  try{ const r=await fetch('/info'); const j=await r.json(); const el=document.getElementById('myIpHint'); if(el) el.textContent='IP WiFi HP ini: '+(j.ip||'-')+' : '+j.port+'  •  Kalau kamu jadi Host, bagikan IP ini.'; }
+  catch(e){ const el=document.getElementById('myIpHint'); if(el) el.textContent='Tidak bisa deteksi IP. Pastikan WiFi aktif.'; }
 }
 detectIp();
-function showJoin(){ document.getElementById('joinBox').classList.remove('hidden'); updateJoinPreview(); }
-function validName(){ const n=document.getElementById('name').value.trim(); if(!n){ alert('Isi Nama dulu'); return null; } return n; }
+function showJoin(){ switchTab('join'); }
+function validName(){ const n=document.getElementById('name').value.trim(); if(!n){ showToast('Isi Nama dulu'); return null; } return n; }
 function isValidIp(ip){ return /^(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$/.test(ip); }
 function isValidPort(p){ return /^\d+$/.test(p||'') && parseInt(p,10)>=1 && parseInt(p,10)<=65535; }
-function showJoinError(msg){ const el=document.getElementById('joinError'); if(!msg){ el.style.display='none'; el.textContent=''; } else { el.style.display='block'; el.textContent=msg; } }
+function showJoinError(msg){ const el=document.getElementById('joinError'); if(!el) return; if(!msg){ el.style.display='none'; el.textContent=''; } else { el.style.display='block'; el.textContent=msg; } }
 function updateJoinPreview(){
   const ipEl=document.getElementById('hostIp'); const portEl=document.getElementById('hostPort');
   if(!ipEl||!portEl) return;
@@ -103,93 +289,101 @@ function tryAutoSplitIpField(){
   if(!ipEl) return;
   let v=ipEl.value.trim().replace(/^https?:\/\//i,'').replace(/\/$/,'');
   if(!v) return;
-  // Kasus 1: ada titik dua, misal 192.168.1.8:8080 -> split
   if(v.indexOf(':')>=0){
     const parts=v.split(':'); const ipPart=parts[0].trim(); const portPart=(parts[1]||'').trim();
     if(isValidIp(ipPart)){ ipEl.value=ipPart; if(portPart && /^\d+$/.test(portPart)) portEl.value=portPart; updateJoinPreview(); return; }
   }
-  // Kasus 2: tanpa titik dua tapi berakhiran port, misal 192.168.1.88080 (IP 192.168.1.8 + 8080 menempel)
-  // Cek akhiran 8080-8090
   const portSuffix=v.match(/(8080|8081|8082|8083|8084|8085|8086|8087|8088|8089|8090)$/);
   if(portSuffix && !isValidIp(v)){
     const port=portSuffix[1]; const without=v.slice(0, -port.length);
     if(isValidIp(without)){ ipEl.value=without; portEl.value=port; updateJoinPreview(); return; }
-    // Kasus bug lama: 192.168.1.8080 -> tanpa port = "192.168.1." (IP belum lengkap)
-    // Jangan tebak oktet terakhir, biarkan user lengkapi, tapi isi port otomatis
     if(without.match(/^\d+\.\d+\.\d+\.$/)){ ipEl.value=without; portEl.value=port; updateJoinPreview(); showJoinError('IP terdeteksi belum lengkap (kurang oktet terakhir). Lengkapi IP, contoh: 192.168.1.8'); return; }
   }
-  // Kasus 3: 4 segmen tapi segmen terakhir >255, misal 192.168.1.8080 -> segmen terakhir dianggap port
   const segs=v.split('.');
   if(segs.length===4 && /^\d+$/.test(segs[3]) && parseInt(segs[3],10)>255 && segs[3].length>=4){
     const maybePort=segs[3]; const ipPrefix=segs.slice(0,3).join('.')+'.';
-    // Jika segmen terakhir adalah 8080 persis, kemungkinan besar user mengetik IP + port tanpa titik dua dan oktet terakhir hilang
     if(maybePort==='8080' || maybePort==='8081' || maybePort==='8082'){
       ipEl.value=ipPrefix; portEl.value=maybePort; updateJoinPreview(); showJoinError('IP terdeteksi belum lengkap (kurang oktet terakhir). Lengkapi IP, contoh: 192.168.1.8'); return;
     }
   }
   updateJoinPreview();
 }
-document.addEventListener('DOMContentLoaded', function(){
-  const ipEl=document.getElementById('hostIp'); const portEl=document.getElementById('hostPort');
-  if(ipEl){
-    ipEl.addEventListener('input', tryAutoSplitIpField);
-    ipEl.addEventListener('paste', function(e){
-      // Biarkan paste masuk dulu, lalu split di tick berikutnya
-      setTimeout(tryAutoSplitIpField, 0);
-    });
-  }
-  if(portEl){ portEl.addEventListener('input', updateJoinPreview); }
-});
 async function createRoom(){
-  const n=validName(); if(!n) return; myName=n; isHost=true; base='';
+  const n=validName(); if(!n) return; myName=n; updateAvatar(); isHost=true; base='';
+  const btn=document.getElementById('createBtn'); if(btn){ btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Membuat Room...'; }
   let ip='-'; try{ const r=await fetch('/info'); const j=await r.json(); ip=j.ip+':'+j.port; hostIp=j.ip; }catch(e){}
-  enterChat('Ruangan LAN (Host)', 'Kamu Host • IP: '+ip);
-  document.getElementById('hostIpBox').style.display='flex'; document.getElementById('hostIpText').textContent=ip;
+  if(btn){ btn.disabled=false; btn.textContent='Buat Ruangan (Jadi Host)'; }
+  enterChat('Ruangan LAN (Host)', 'Status: Host • IP: '+ip);
+  const hb=document.getElementById('hostIpBox'); if(hb) hb.style.display='flex';
+  const ht=document.getElementById('hostIpText'); if(ht) ht.textContent=ip;
+  const sb=document.getElementById('sidebarHostBox'); if(sb) sb.style.display='flex';
+  const st=document.getElementById('sidebarHostIpText'); if(st) st.textContent=ip;
+  const hs=document.getElementById('hostStatusHint'); if(hs) hs.innerHTML='Status: <b style="color:#00a884">🟢 Menunggu teman bergabung...</b> Bagikan IP di atas ke teman.';
+  const ct=document.getElementById('connText'); if(ct) ct.textContent='Terhubung sebagai Host • IP: '+ip;
+  const cd=document.getElementById('connDot'); if(cd) cd.classList.add('on');
+  addEventPill('Kamu membuat room sebagai Host');
 }
 async function joinRoom(){
   const n=validName(); if(!n) return;
-  // Normalisasi: coba auto-split dulu (jika user paste IP:Port ke field IP)
   tryAutoSplitIpField();
   const ipRaw=document.getElementById('hostIp').value.trim();
   const portRaw=(document.getElementById('hostPort').value||'').trim();
-  if(!ipRaw){ showJoinError('Isi IP Host dulu. Contoh: 192.168.1.8'); alert('Isi IP Host dulu. Contoh: 192.168.1.8'); return; }
-  if(!isValidIp(ipRaw)){ showJoinError('Format IP salah. Contoh benar: 192.168.1.8 (4 angka dipisah titik). Jangan isi port di field IP — port ada field sendiri.'); alert('Format IP salah.\nContoh benar: 192.168.1.8\nJangan isi port di field IP — port ada field sendiri.'); return; }
-  if(!isValidPort(portRaw)){ showJoinError('Port harus angka 1-65535. Contoh: 8080'); alert('Port harus angka 1-65535. Contoh: 8080'); return; }
+  if(!ipRaw){ showJoinError('Isi IP Host dulu. Contoh: 192.168.1.8'); showToast('Isi IP Host dulu'); return; }
+  if(!isValidIp(ipRaw)){ showJoinError('Format IP salah. Contoh benar: 192.168.1.8 (4 angka dipisah titik). Jangan isi port di field IP — port ada field sendiri.'); showToast('Format IP salah'); return; }
+  if(!isValidPort(portRaw)){ showJoinError('Port harus angka 1-65535. Contoh: 8080'); showToast('Port harus 1-65535'); return; }
   showJoinError('');
   const display=ipRaw+':'+portRaw;
-  myName=n; isHost=false; hostIp=display; base='http://'+display;
+  const btn=document.getElementById('joinBtn'); if(btn){ btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Menyambungkan...'; }
+  myName=n; updateAvatar(); isHost=false; hostIp=display; base='http://'+display;
   setStatus('Mencari...','wait');
-  try{ const r=await fetch(base+'/info'); if(!r.ok) throw new Error('HTTP '+r.status); enterChat('Ruangan LAN (Tamu)','Terhubung ke Host '+display); document.getElementById('hostIpBox').style.display='none'; }
-  catch(e){ alert('Gagal terhubung ke Host '+display+'\n\nCek:\n• HP Host & HP ini di WiFi yang sama\n• Host sudah Buat Ruangan & aplikasinya masih terbuka\n• IP benar (contoh: 192.168.1.8) dan Port benar (contoh: 8080)\n• Coba IP lain jika Host punya 2 IP'); }
+  try{ const r=await fetch(base+'/info'); if(!r.ok) throw new Error('HTTP '+r.status); if(btn){ btn.disabled=false; btn.textContent='Gabung Sekarang'; } enterChat('Ruangan LAN (Tamu)','Terhubung ke Host '+display); const hb=document.getElementById('hostIpBox'); if(hb) hb.style.display='none'; const ct=document.getElementById('connText'); if(ct) ct.textContent='Terhubung ke Host '+display; const cd=document.getElementById('connDot'); if(cd) cd.classList.add('on'); addEventPill('Kamu bergabung ke room'); }
+  catch(e){ if(btn){ btn.disabled=false; btn.textContent='Gabung Sekarang'; } showToast('Gagal terhubung ke Host '+display); const ct=document.getElementById('connText'); if(ct) ct.textContent='Gagal terhubung. Cek WiFi dan IP Host.'; }
 }
 function enterChat(title,sub){
-  document.getElementById('setup').style.display='none'; document.querySelector('header').style.display='none';
-  document.getElementById('chat').style.display='flex';
-  document.getElementById('roomTitle').textContent=title; document.getElementById('roomSub').textContent=sub;
-  lastTime=0; seen=new Set(); document.getElementById('msgs').innerHTML='';
+  const welcome=document.getElementById('welcome'); if(welcome) welcome.style.display='none';
+  const chat=document.getElementById('chat'); if(chat) chat.style.display='flex';
+  const setup=document.getElementById('setup');
+  if(window.innerWidth<768){ if(setup) setup.style.display='none'; document.getElementById('appRoot').classList.add('mobile-chat'); }
+  else { if(setup) setup.style.display='flex'; }
+  const rt=document.getElementById('roomTitle'); if(rt) rt.textContent=title;
+  const rs=document.getElementById('roomSub'); if(rs) rs.textContent=sub;
+  lastTime=0; seen=new Set(); const msgs=document.getElementById('msgs'); if(msgs) msgs.innerHTML='';
   if(timer) clearInterval(timer); timer=setInterval(poll,2000); poll();
 }
 function leave(){ if(timer) clearInterval(timer); location.reload(); }
-function setStatus(t,cls){ const el=document.getElementById('status'); el.textContent=t; el.className='pill '+cls; }
+function setStatus(t,cls){ const el=document.getElementById('status'); if(!el) return; el.textContent=t; el.className='pill '+cls; }
 async function poll(){
   try{ const r=await fetch(base+'/messages?since='+lastTime); if(!r.ok) throw new Error('HTTP'); const j=await r.json(); setStatus('Terhubung',''); let max=lastTime;
     for(const m of j.messages){ if(seen.has(m.id)) continue; seen.add(m.id); addMsg(m); if(m.time>max) max=m.time; } lastTime=max;
   }catch(e){ setStatus('Terputus','off'); }
 }
 function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function senderColor(name){
+  const colors=['#ff8a65','#f06292','#ba68c8','#4fc3f7','#4db6ac','#aed581','#ffd54f','#ff8a65'];
+  let h=0; for(let i=0;i<name.length;i++) h=(h*31+name.charCodeAt(i))>>>0;
+  return colors[h%colors.length];
+}
+function addEventPill(text){
+  const box=document.getElementById('msgs'); if(!box) return;
+  const d=document.createElement('div'); d.className='event-pill'; d.textContent=text; box.appendChild(d);
+}
 function addMsg(m){
-  const d=document.createElement('div'); d.className='msg'+(m.sender===myName?' me':'');
-  d.innerHTML='<div class="who">'+esc(m.sender)+'</div><div>'+esc(m.text).replace(/\n/g,'<br>')+'</div>'+(m.image?'<img src="'+m.image+'"/>':'')+'<div class="time">'+esc(m.timeStr||'')+'</div>';
-  document.getElementById('msgs').appendChild(d); const box=document.getElementById('msgs'); box.scrollTop=box.scrollHeight;
+  const isMe = (m.sender===myName);
+  const d=document.createElement('div'); d.className='msg'+(isMe?' me':'');
+  const whoHtml = isMe ? '' : '<div class="who" style="color:'+senderColor(m.sender)+'">'+esc(m.sender)+'</div>';
+  const checks = isMe ? '<span class="checks">✓✓</span>' : '';
+  d.innerHTML=whoHtml+'<div class="body">'+esc(m.text).replace(/\n/g,'<br>')+'</div>'+(m.image?'<img src="'+m.image+'"/>':'')+'<div class="meta"><span>'+esc(m.timeStr||'')+'</span>'+checks+'</div>';
+  const box=document.getElementById('msgs'); box.appendChild(d); box.scrollTo({top:box.scrollHeight, behavior:'smooth'});
 }
 async function send(){
   const t=document.getElementById('text'); const text=t.value.trim();
   if(!text && !pendingImage){ return; }
+  hideEmoji();
   setStatus('Mengirim...','wait');
   try{ const r=await fetch(base+'/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sender:myName,text:text,image:pendingImage})});
     const j=await r.json(); if(!r.ok) throw new Error(j.error||'Gagal');
     t.value=''; clearPhoto(); poll();
-  }catch(e){ alert('Gagal kirim: '+e.message); setStatus('Terputus','off'); }
+  }catch(e){ showToast('Gagal kirim: '+e.message); setStatus('Terputus','off'); }
 }
 function onFile(inp){
   const f=inp.files[0]; if(!f) return;
@@ -198,12 +392,19 @@ function onFile(inp){
       const max=800; let w=img.width,h=img.height; const sc=Math.min(1,max/Math.max(w,h)); w=Math.round(w*sc); h=Math.round(h*sc);
       const c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h);
       pendingImage=c.toDataURL('image/jpeg',0.7);
-      if(pendingImage.length>2600000){ alert('Foto terlalu besar setelah kompresi, coba foto lain'); pendingImage=''; return; }
+      if(pendingImage.length>2600000){ showToast('Foto terlalu besar setelah kompresi, coba foto lain'); pendingImage=''; return; }
       document.getElementById('prevImg').src=pendingImage; document.getElementById('preview').style.display='flex';
     }; img.src=e.target.result;
   }; reader.readAsDataURL(f); inp.value='';
 }
 function clearPhoto(){ pendingImage=''; document.getElementById('preview').style.display='none'; }
-function copyIp(){ const t=document.getElementById('hostIpText').textContent; if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>alert('IP tersalin: '+t)); else { prompt('Salin IP ini:',t); } }
+function copyIp(){
+  let t='';
+  const ht=document.getElementById('hostIpText'); if(ht && ht.textContent && ht.textContent!=='-') t=ht.textContent;
+  else { const st=document.getElementById('sidebarHostIpText'); if(st) t=st.textContent; }
+  if(!t || t==='-'){ showToast('Belum ada IP Room. Buat Room dulu.'); return; }
+  if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>showToast('Kode Host berhasil disalin!')).catch(()=>{ showToast('IP: '+t); });
+  else { showToast('IP: '+t); }
+}
 </script>
 </body></html>
