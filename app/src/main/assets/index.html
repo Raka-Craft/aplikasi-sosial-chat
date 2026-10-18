@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>Aplikasi Sosial Chat — LAN</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#E9EFEA;color:#132019}
+header{background:#059669;color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5}
+.logo{width:40px;height:40px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:22px}
+h1{font-size:18px;margin:0}small{opacity:.85}
+.card{background:#fff;margin:16px;border-radius:16px;padding:18px;box-shadow:0 4px 18px rgba(0,0,0,.08)}
+label{font-size:13px;font-weight:600;color:#475569;display:block;margin:10px 0 6px}
+input{width:100%;padding:12px 14px;border:1px solid #CBD5E1;border-radius:12px;font-size:15px;outline:none}
+input:focus{border-color:#059669;box-shadow:0 0 0 3px rgba(5,150,105,.15)}
+button{width:100%;padding:13px;border:0;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;margin-top:10px}
+.btn-host{background:#059669;color:#fff}.btn-join{background:#F59E0B;color:#1F2937}.btn-ghost{background:#EEF2F1;color:#132019}
+.hint{font-size:13px;color:#64748B;line-height:1.5;margin-top:10px}
+.ipbox{background:#064E3B;color:#fff;border-radius:12px;padding:12px 14px;margin-top:12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ipbox b{font-size:16px}.ipbox button{width:auto;margin:0;padding:8px 12px;background:#F59E0B;color:#111;border-radius:10px}
+#chat{display:none;flex-direction:column;height:100dvh}
+#topbar{background:#059669;color:#fff;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+#topbar button{width:auto;margin:0;padding:8px 12px;background:rgba(255,255,255,.2);color:#fff}
+.pill{font-size:12px;padding:5px 10px;border-radius:999px;background:#fff;color:#059669;font-weight:700}
+.pill.off{background:#FEE2E2;color:#B91C1C}.pill.wait{background:#FEF3C7;color:#92400E}
+#msgs{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:#E9EFEA}
+.msg{max-width:82%;padding:10px 12px;border-radius:14px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);word-break:break-word}
+.msg.me{align-self:flex-end;background:#059669;color:#fff}
+.msg .who{font-size:12px;font-weight:700;opacity:.75}.msg .time{font-size:11px;opacity:.6;margin-top:4px;text-align:right}
+.msg img{max-width:100%;border-radius:10px;margin-top:6px;display:block}
+#composer{background:#fff;padding:10px;display:flex;gap:8px;align-items:center;border-top:1px solid #E2E8F0}
+#composer input{flex:1;margin:0}
+.iconbtn{width:44px;height:44px;flex:0 0 44px;border-radius:50%;border:0;background:#EEF2F1;font-size:20px;cursor:pointer}
+.send{width:48px;height:44px;flex:0 0 48px;border:0;border-radius:12px;background:#059669;color:#fff;font-weight:800;cursor:pointer}
+#preview{display:none;padding:8px 10px;background:#FFFBEB;border-top:1px solid #FDE68A;align-items:center;gap:8px}
+#preview img{width:56px;height:56px;object-fit:cover;border-radius:8px}
+.hidden{display:none!important}
+</style></head>
+<body>
+<header><div class="logo">💬</div><div><h1>Aplikasi Sosial Chat</h1><small>Chat LAN • Satu WiFi • Tanpa Internet</small></div></header>
+
+<div id="setup" class="card">
+  <h2 style="margin:0 0 4px">Masuk Ruangan LAN</h2>
+  <p style="margin:0;color:#64748B;font-size:14px">Semua HP harus di WiFi yang sama. Tanpa login, tanpa server luar.</p>
+  <label>Nama kamu</label>
+  <input id="name" placeholder="Contoh: Andi" maxlength="30"/>
+  <button class="btn-host" onclick="createRoom()">＋ Buat Ruangan (Jadi Host)</button>
+  <button class="btn-join" onclick="showJoin()">→ Gabung Ruangan</button>
+  <div id="joinBox" class="hidden">
+    <label>IP Host (dari HP Host) — tanpa port, tanpa titik dua</label>
+    <input id="hostIp" placeholder="Contoh: 192.168.1.8" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false"/>
+    <label>Port</label>
+    <input id="hostPort" placeholder="8080" type="text" inputmode="numeric" autocomplete="off" value="8080" maxlength="5"/>
+    <div id="joinPreview" class="hint" style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:8px 10px;color:#166534">Akan gabung ke: -</div>
+    <div id="joinError" class="hint" style="display:none;color:#B91C1C;background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:8px 10px"></div>
+    <button class="btn-join" onclick="joinRoom()">Gabung Sekarang</button>
+    <div class="hint">Minta IP ke Host. Host bisa lihat IP-nya di layar chat setelah Buat Ruangan. Tidak perlu ketik titik dua (:) — IP dan Port sudah dipisah.</div>
+  </div>
+  <div class="hint"><b>Cara pakai:</b><br>1. HP 1 tap <b>Buat Ruangan</b>, lalu bagikan IP-nya.<br>2. HP lain isi Nama + IP Host, tap <b>Gabung</b>.<br>3. Chat teks + foto langsung jalan. Host harus tetap buka aplikasi, riwayat hilang kalau Host tutup.</div>
+  <div class="hint" id="myIpHint">Mendeteksi IP WiFi...</div>
+</div>
+
+<div id="chat">
+  <div id="topbar">
+    <div><b id="roomTitle">Ruangan LAN</b><br><span id="roomSub" style="font-size:12px;opacity:.85"></span></div>
+    <span id="status" class="pill wait">Mencari...</span>
+    <button onclick="leave()">Keluar</button>
+  </div>
+  <div id="hostIpBox" class="ipbox" style="margin:10px 12px 0"><div><small>IP Ruangan (bagikan ke teman)</small><br><b id="hostIpText">-</b></div><button onclick="copyIp()">Salin</button></div>
+  <div id="msgs"></div>
+  <div id="preview"><img id="prevImg"/><span id="prevTxt" style="font-size:13px">Foto siap dikirim</span><button onclick="clearPhoto()" style="width:auto;margin-left:auto;padding:6px 10px">✕</button></div>
+  <div id="composer">
+    <button class="iconbtn" onclick="document.getElementById('fileInput').click()" title="Kirim foto">📷</button>
+    <input id="fileInput" type="file" accept="image/*" style="display:none" onchange="onFile(this)"/>
+    <input id="text" placeholder="Ketik pesan..." maxlength="4000" onkeydown="if(event.key==='Enter')send()"/>
+    <button class="send" onclick="send()">➤</button>
+  </div>
+</div>
+
+<script>
+let myName='', base='', isHost=false, hostIp='', lastTime=0, timer=null, pendingImage='', seen=new Set();
+async function detectIp(){
+  try{ const r=await fetch('/info'); const j=await r.json(); document.getElementById('myIpHint').textContent='IP WiFi HP ini: '+(j.ip||'-')+' : '+j.port+'  •  Kalau kamu jadi Host, bagikan IP ini.'; }
+  catch(e){ document.getElementById('myIpHint').textContent='Tidak bisa deteksi IP. Pastikan WiFi aktif.'; }
+}
+detectIp();
+function showJoin(){ document.getElementById('joinBox').classList.remove('hidden'); updateJoinPreview(); }
+function validName(){ const n=document.getElementById('name').value.trim(); if(!n){ alert('Isi Nama dulu'); return null; } return n; }
+function isValidIp(ip){ return /^(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$/.test(ip); }
+function isValidPort(p){ return /^\d+$/.test(p||'') && parseInt(p,10)>=1 && parseInt(p,10)<=65535; }
+function showJoinError(msg){ const el=document.getElementById('joinError'); if(!msg){ el.style.display='none'; el.textContent=''; } else { el.style.display='block'; el.textContent=msg; } }
+function updateJoinPreview(){
+  const ipEl=document.getElementById('hostIp'); const portEl=document.getElementById('hostPort');
+  if(!ipEl||!portEl) return;
+  const ip=ipEl.value.trim(); const port=(portEl.value||'').trim();
+  const prev=document.getElementById('joinPreview');
+  if(!ip && !port){ if(prev) prev.textContent='Akan gabung ke: -'; showJoinError(''); return; }
+  if(prev) prev.textContent='Akan gabung ke: '+(ip||'-')+':'+(port||'-');
+  if(ip && !isValidIp(ip)){ showJoinError('Format IP salah. Contoh benar: 192.168.1.8 (4 angka dipisah titik). Jangan isi port di field IP.'); return; }
+  if(port && !isValidPort(port)){ showJoinError('Port harus angka 1-65535. Contoh: 8080'); return; }
+  showJoinError('');
+}
+function tryAutoSplitIpField(){
+  const ipEl=document.getElementById('hostIp'); const portEl=document.getElementById('hostPort');
+  if(!ipEl) return;
+  let v=ipEl.value.trim().replace(/^https?:\/\//i,'').replace(/\/$/,'');
+  if(!v) return;
+  // Kasus 1: ada titik dua, misal 192.168.1.8:8080 -> split
+  if(v.indexOf(':')>=0){
+    const parts=v.split(':'); const ipPart=parts[0].trim(); const portPart=(parts[1]||'').trim();
+    if(isValidIp(ipPart)){ ipEl.value=ipPart; if(portPart && /^\d+$/.test(portPart)) portEl.value=portPart; updateJoinPreview(); return; }
+  }
+  // Kasus 2: tanpa titik dua tapi berakhiran port, misal 192.168.1.88080 (IP 192.168.1.8 + 8080 menempel)
+  // Cek akhiran 8080-8090
+  const portSuffix=v.match(/(8080|8081|8082|8083|8084|8085|8086|8087|8088|8089|8090)$/);
+  if(portSuffix && !isValidIp(v)){
+    const port=portSuffix[1]; const without=v.slice(0, -port.length);
+    if(isValidIp(without)){ ipEl.value=without; portEl.value=port; updateJoinPreview(); return; }
+    // Kasus bug lama: 192.168.1.8080 -> tanpa port = "192.168.1." (IP belum lengkap)
+    // Jangan tebak oktet terakhir, biarkan user lengkapi, tapi isi port otomatis
+    if(without.match(/^\d+\.\d+\.\d+\.$/)){ ipEl.value=without; portEl.value=port; updateJoinPreview(); showJoinError('IP terdeteksi belum lengkap (kurang oktet terakhir). Lengkapi IP, contoh: 192.168.1.8'); return; }
+  }
+  // Kasus 3: 4 segmen tapi segmen terakhir >255, misal 192.168.1.8080 -> segmen terakhir dianggap port
+  const segs=v.split('.');
+  if(segs.length===4 && /^\d+$/.test(segs[3]) && parseInt(segs[3],10)>255 && segs[3].length>=4){
+    const maybePort=segs[3]; const ipPrefix=segs.slice(0,3).join('.')+'.';
+    // Jika segmen terakhir adalah 8080 persis, kemungkinan besar user mengetik IP + port tanpa titik dua dan oktet terakhir hilang
+    if(maybePort==='8080' || maybePort==='8081' || maybePort==='8082'){
+      ipEl.value=ipPrefix; portEl.value=maybePort; updateJoinPreview(); showJoinError('IP terdeteksi belum lengkap (kurang oktet terakhir). Lengkapi IP, contoh: 192.168.1.8'); return;
+    }
+  }
+  updateJoinPreview();
+}
+document.addEventListener('DOMContentLoaded', function(){
+  const ipEl=document.getElementById('hostIp'); const portEl=document.getElementById('hostPort');
+  if(ipEl){
+    ipEl.addEventListener('input', tryAutoSplitIpField);
+    ipEl.addEventListener('paste', function(e){
+      // Biarkan paste masuk dulu, lalu split di tick berikutnya
+      setTimeout(tryAutoSplitIpField, 0);
+    });
+  }
+  if(portEl){ portEl.addEventListener('input', updateJoinPreview); }
+});
+async function createRoom(){
+  const n=validName(); if(!n) return; myName=n; isHost=true; base='';
+  let ip='-'; try{ const r=await fetch('/info'); const j=await r.json(); ip=j.ip+':'+j.port; hostIp=j.ip; }catch(e){}
+  enterChat('Ruangan LAN (Host)', 'Kamu Host • IP: '+ip);
+  document.getElementById('hostIpBox').style.display='flex'; document.getElementById('hostIpText').textContent=ip;
+}
+async function joinRoom(){
+  const n=validName(); if(!n) return;
+  // Normalisasi: coba auto-split dulu (jika user paste IP:Port ke field IP)
+  tryAutoSplitIpField();
+  const ipRaw=document.getElementById('hostIp').value.trim();
+  const portRaw=(document.getElementById('hostPort').value||'').trim();
+  if(!ipRaw){ showJoinError('Isi IP Host dulu. Contoh: 192.168.1.8'); alert('Isi IP Host dulu. Contoh: 192.168.1.8'); return; }
+  if(!isValidIp(ipRaw)){ showJoinError('Format IP salah. Contoh benar: 192.168.1.8 (4 angka dipisah titik). Jangan isi port di field IP — port ada field sendiri.'); alert('Format IP salah.\nContoh benar: 192.168.1.8\nJangan isi port di field IP — port ada field sendiri.'); return; }
+  if(!isValidPort(portRaw)){ showJoinError('Port harus angka 1-65535. Contoh: 8080'); alert('Port harus angka 1-65535. Contoh: 8080'); return; }
+  showJoinError('');
+  const display=ipRaw+':'+portRaw;
+  myName=n; isHost=false; hostIp=display; base='http://'+display;
+  setStatus('Mencari...','wait');
+  try{ const r=await fetch(base+'/info'); if(!r.ok) throw new Error('HTTP '+r.status); enterChat('Ruangan LAN (Tamu)','Terhubung ke Host '+display); document.getElementById('hostIpBox').style.display='none'; }
+  catch(e){ alert('Gagal terhubung ke Host '+display+'\n\nCek:\n• HP Host & HP ini di WiFi yang sama\n• Host sudah Buat Ruangan & aplikasinya masih terbuka\n• IP benar (contoh: 192.168.1.8) dan Port benar (contoh: 8080)\n• Coba IP lain jika Host punya 2 IP'); }
+}
+function enterChat(title,sub){
+  document.getElementById('setup').style.display='none'; document.querySelector('header').style.display='none';
+  document.getElementById('chat').style.display='flex';
+  document.getElementById('roomTitle').textContent=title; document.getElementById('roomSub').textContent=sub;
+  lastTime=0; seen=new Set(); document.getElementById('msgs').innerHTML='';
+  if(timer) clearInterval(timer); timer=setInterval(poll,2000); poll();
+}
+function leave(){ if(timer) clearInterval(timer); location.reload(); }
+function setStatus(t,cls){ const el=document.getElementById('status'); el.textContent=t; el.className='pill '+cls; }
+async function poll(){
+  try{ const r=await fetch(base+'/messages?since='+lastTime); if(!r.ok) throw new Error('HTTP'); const j=await r.json(); setStatus('Terhubung',''); let max=lastTime;
+    for(const m of j.messages){ if(seen.has(m.id)) continue; seen.add(m.id); addMsg(m); if(m.time>max) max=m.time; } lastTime=max;
+  }catch(e){ setStatus('Terputus','off'); }
+}
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function addMsg(m){
+  const d=document.createElement('div'); d.className='msg'+(m.sender===myName?' me':'');
+  d.innerHTML='<div class="who">'+esc(m.sender)+'</div><div>'+esc(m.text).replace(/\n/g,'<br>')+'</div>'+(m.image?'<img src="'+m.image+'"/>':'')+'<div class="time">'+esc(m.timeStr||'')+'</div>';
+  document.getElementById('msgs').appendChild(d); const box=document.getElementById('msgs'); box.scrollTop=box.scrollHeight;
+}
+async function send(){
+  const t=document.getElementById('text'); const text=t.value.trim();
+  if(!text && !pendingImage){ return; }
+  setStatus('Mengirim...','wait');
+  try{ const r=await fetch(base+'/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sender:myName,text:text,image:pendingImage})});
+    const j=await r.json(); if(!r.ok) throw new Error(j.error||'Gagal');
+    t.value=''; clearPhoto(); poll();
+  }catch(e){ alert('Gagal kirim: '+e.message); setStatus('Terputus','off'); }
+}
+function onFile(inp){
+  const f=inp.files[0]; if(!f) return;
+  const reader=new FileReader(); reader.onload=e=>{
+    const img=new Image(); img.onload=()=>{
+      const max=800; let w=img.width,h=img.height; const sc=Math.min(1,max/Math.max(w,h)); w=Math.round(w*sc); h=Math.round(h*sc);
+      const c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h);
+      pendingImage=c.toDataURL('image/jpeg',0.7);
+      if(pendingImage.length>2600000){ alert('Foto terlalu besar setelah kompresi, coba foto lain'); pendingImage=''; return; }
+      document.getElementById('prevImg').src=pendingImage; document.getElementById('preview').style.display='flex';
+    }; img.src=e.target.result;
+  }; reader.readAsDataURL(f); inp.value='';
+}
+function clearPhoto(){ pendingImage=''; document.getElementById('preview').style.display='none'; }
+function copyIp(){ const t=document.getElementById('hostIpText').textContent; if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>alert('IP tersalin: '+t)); else { prompt('Salin IP ini:',t); } }
+</script>
+</body></html>

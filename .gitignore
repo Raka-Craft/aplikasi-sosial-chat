@@ -1,0 +1,17 @@
+# Local
+local.properties
+*.log
+# Build
+build/
+app/build/
+*.apk
+*.aab
+# Keystore - jangan commit keystore asli
+*.keystore
+*.jks
+# Gradle wrapper jar (binary) - download via gradle wrapper
+gradle/wrapper/gradle-wrapper.jar
+# Binary icons - upload via web jika perlu
+*.png
+*.jpg
+*.jpeg
